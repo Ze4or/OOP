@@ -1,4 +1,5 @@
-import org.example.HeapSort;
+package ru.nsu.batyaev.task_1_1_1;
+
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -46,6 +47,18 @@ class HeapSortTest {
 
         assertArrayEquals(
                 new int[]{-2, -1, 0, 5},
+                arr
+        );
+    }
+
+    @Test
+    void testAlreadySortedArray() {
+        int[] arr = {1, 2, 3, 4, 5, 6};
+
+        HeapSort.heapsort(arr);
+
+        assertArrayEquals(
+                new int[]{1, 2, 3, 4, 5, 6},
                 arr
         );
     }

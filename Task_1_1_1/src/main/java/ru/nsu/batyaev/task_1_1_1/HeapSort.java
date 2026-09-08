@@ -1,9 +1,15 @@
-package org.example;
+package ru.nsu.batyaev.task_1_1_1;
 
-import java.util.Arrays;
-
+/**
+ * Реализация пирамидальной сортировки.
+ */
 public class HeapSort {
 
+    /**
+     * Сортирует массив методом пирамидальной сортировки.
+     *
+     * @param arr массив, который нужно отсортировать
+     */
     public static void heapsort(int[] arr) {
         int n = arr.length;
 
@@ -22,6 +28,13 @@ public class HeapSort {
         }
     }
 
+    /**
+     * Восстанавливает свойство кучи для элемента.
+     *
+     * @param arr массив
+     * @param n размер кучи
+     * @param i индекс текущего элемента
+     */
     private static void heapify(int[] arr, int n, int i) {
         int largest = i;
         int left = 2 * i + 1;
@@ -42,13 +55,5 @@ public class HeapSort {
 
             heapify(arr, n, largest);
         }
-    }
-
-    public static void main(String[] args) {
-        int[] arr = {5, 4, 3, 2, 1};
-
-        heapsort(arr);
-
-        System.out.println(Arrays.toString(arr));
     }
 }
