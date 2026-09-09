@@ -1,7 +1,5 @@
 package ru.nsu.batyaev.task_1_1_1;
 
-import java.util.Arrays;
-
 /**
  * Реализация пирамидальной сортировки.
  */
@@ -57,19 +55,5 @@ public class HeapSort {
 
             heapify(arr, n, largest);
         }
-    }
-
-
-    /**
-     * Точка входа в программу.
-     *
-     * @param args аргументы командной строки
-     */
-    public static void main(String[] args) {
-        int[] arr = {5, 4, 3, 2, 1};
-
-        heapsort(arr);
-
-        System.out.println(Arrays.toString(arr));
     }
 }
