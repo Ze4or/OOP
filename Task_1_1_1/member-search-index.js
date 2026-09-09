@@ -1,1 +1,1 @@
-memberSearchIndex = [{"p":"ru.nsu.batyaev.task_1_1_1","c":"HeapSort","l":"HeapSort()","u":"%3Cinit%3E()"},{"p":"ru.nsu.batyaev.task_1_1_1","c":"HeapSort","l":"heapsort(int[])"}];updateSearchResults();
+memberSearchIndex = [{"p":"ru.nsu.batyaev.task_1_1_1","c":"HeapSort","l":"HeapSort()","u":"%3Cinit%3E()"},{"p":"ru.nsu.batyaev.task_1_1_1","c":"HeapSort","l":"heapsort(int[])"},{"p":"ru.nsu.batyaev.task_1_1_1","c":"HeapSort","l":"main(String[])","u":"main(java.lang.String[])"}];updateSearchResults();
