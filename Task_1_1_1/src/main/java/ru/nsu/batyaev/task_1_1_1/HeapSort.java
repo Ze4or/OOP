@@ -20,10 +20,7 @@ public class HeapSort {
 
         // Сортируем
         for (int i = n - 1; i > 0; i--) {
-            int temp = arr[0];
-            arr[0] = arr[i];
-            arr[i] = temp;
-
+            swap(arr, 0, i);
             heapify(arr, i, 0);
         }
     }
@@ -49,11 +46,21 @@ public class HeapSort {
         }
 
         if (largest != i) {
-            int temp = arr[i];
-            arr[i] = arr[largest];
-            arr[largest] = temp;
-
+            swap(arr, i, largest);
             heapify(arr, n, largest);
         }
+    }
+
+    /**
+     * Меняет местами два элемента массива.
+     *
+     * @param arr массив
+     * @param i индекс первого элемента
+     * @param j индекс второго элемента
+     */
+    private static void swap(int[] arr, int i, int j) {
+        int temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
     }
 }
