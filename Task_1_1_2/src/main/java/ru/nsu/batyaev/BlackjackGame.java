@@ -2,6 +2,11 @@ package ru.nsu.batyaev;
 
 import java.util.Scanner;
 
+/**
+ * Управляет игровым процессом Blackjack.
+ * Отвечает за раздачу карт, ходы игрока и дилера,
+ * проверку Blackjack и определение победителя.
+ */
 public class BlackjackGame {
 
     private final Scanner scanner = new Scanner(System.in);
