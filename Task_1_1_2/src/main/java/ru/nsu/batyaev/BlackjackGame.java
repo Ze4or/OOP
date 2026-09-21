@@ -9,8 +9,7 @@ import java.util.Scanner;
  */
 public class BlackjackGame {
 
-    private final Scanner scanner = new Scanner(System.in);
-
+    private final Scanner scanner;
     private final Deck deck;
     private final Player player;
     private final Dealer dealer;
@@ -20,14 +19,25 @@ public class BlackjackGame {
     private int roundNumber = 1;
 
     /**
-     * Создаёт новую игру Blackjack.
+     * Стандартный конструктор для обычной игры.
      *
      * @param numberOfDecks количество используемых колод
      */
     public BlackjackGame(int numberOfDecks) {
-        deck = new Deck(numberOfDecks);
-        player = new Player();
-        dealer = new Dealer();
+        this(new Deck(numberOfDecks), new Scanner(System.in));
+    }
+
+    /**
+     * Конструктор для внедрения зависимостей (используется в unit-тестах).
+     *
+     * @param deck    колода карт
+     * @param scanner источник ввода
+     */
+    public BlackjackGame(Deck deck, Scanner scanner) {
+        this.deck = deck;
+        this.scanner = scanner;
+        this.player = new Player();
+        this.dealer = new Dealer();
     }
 
     public void start() {
@@ -94,10 +104,8 @@ public class BlackjackGame {
 
     /**
      * Первоначальная раздача.
-     * Игрок:
-     * 2 открытые карты.
-     * Дилер:
-     * 1 открытая карта + 1 закрытая.
+     * Игрок: 2 открытые карты.
+     * Дилер: 1 открытая карта + 1 закрытая.
      */
     private void dealCards() {
 
@@ -112,8 +120,7 @@ public class BlackjackGame {
 
     /**
      * Ход игрока.
-     * Возвращает false, если игрок проиграл
-     * из-за превышения 21.
+     * Возвращает false, если игрок проиграл из-за превышения 21.
      */
     private boolean playerTurn() {
 
@@ -154,8 +161,7 @@ public class BlackjackGame {
     /**
      * Ход дилера.
      * Сначала открывается закрытая карта.
-     * После этого дилер берёт карты,
-     * пока сумма меньше 17.
+     * После этого дилер берёт карты, пока сумма меньше 17.
      */
     private void dealerTurn() {
 
