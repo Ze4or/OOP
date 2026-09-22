@@ -1,5 +1,7 @@
 package ru.nsu.batyaev;
 
+import java.util.List;
+
 /**
  * Представляет дилера в Blackjack.
  * Использует композицию вместо наследования от Player (LSP).
@@ -38,7 +40,8 @@ public class Dealer {
      */
     public Card revealHiddenCard() {
         hiddenCardOpened = true;
-        return hand.getCards().getLast();
+        List<Card> cards = hand.getCards();
+        return cards.get(cards.size() - 1);
     }
 
     public void clearHand() {

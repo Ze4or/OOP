@@ -278,7 +278,7 @@ public class BlackjackGame {
         System.out.println("Ваши карты: " + player.getHand() + "  " + player.getScore());
 
         if (dealer.hasHiddenCard()) {
-            Card firstCard = dealer.getHand().getCards().getFirst();
+            Card firstCard = dealer.getHand().getCards().get(0);
             System.out.println("Карты дилера: [" + firstCard + " (" + firstCard.getValue() + ")], <закрытая карта>");
         } else {
             System.out.println("Карты дилера: " + dealer.getHand() + "  " + dealer.getScore());
