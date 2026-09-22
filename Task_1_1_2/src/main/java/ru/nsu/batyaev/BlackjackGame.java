@@ -113,7 +113,7 @@ public class BlackjackGame {
         dealer.takeCard(deck.drawCard());
 
         player.takeCard(deck.drawCard());
-        dealer.setHiddenCard(deck.drawCard());
+        dealer.takeCard(deck.drawCard());
 
         System.out.println("Дилер раздал карты");
     }
@@ -169,9 +169,7 @@ public class BlackjackGame {
         System.out.println("Ход дилера");
         System.out.println("-------");
 
-        dealer.revealHiddenCard();
-
-        Card revealedCard = dealer.getHand().getCards().get(dealer.getHand().getCards().size() - 1);
+        Card revealedCard = dealer.revealHiddenCard();
 
         System.out.println("Дилер открывает закрытую карту " + revealedCard + " (" + revealedCard.getValue() + ")");
 
@@ -235,48 +233,38 @@ public class BlackjackGame {
      * Определение победителя после хода дилера.
      */
     private void determineWinner() {
-
         int playerScore = player.getScore();
         int dealerScore = dealer.getScore();
 
         System.out.println();
 
         if (player.isBust()) {
-
             dealerWins++;
-
             System.out.println("Вы проиграли раунд!");
-
             return;
         }
 
-        // Если дилер превысил 21, игрок автоматически победил.
         if (dealer.isBust()) {
-
             playerWins++;
-
             System.out.println("У дилера перебор!");
-
             System.out.println("Вы выиграли раунд!");
-
             return;
         }
 
-        // Сравниваем очки.
-        if (playerScore > dealerScore) {
-
-            playerWins++;
-
-            System.out.println("Вы выиграли раунд!");
-
-        } else if (playerScore < dealerScore) {
-
+        // Блэкджек (2 карты = 21) бьет обычные 21 очка (3+ карты)
+        if (dealer.hasBlackjack() && !player.hasBlackjack()) {
             dealerWins++;
-
+            System.out.println("У дилера БЛЭКДЖЕК! Дилер выиграл раунд!");
+        } else if (player.hasBlackjack() && !dealer.hasBlackjack()) {
+            playerWins++;
+            System.out.println("У вас БЛЭКДЖЕК! Вы выиграли раунд!");
+        } else if (playerScore > dealerScore) {
+            playerWins++;
+            System.out.println("Вы выиграли раунд!");
+        } else if (playerScore < dealerScore) {
+            dealerWins++;
             System.out.println("Дилер выиграл раунд!");
-
         } else {
-
             System.out.println("Ничья!");
         }
 
@@ -287,18 +275,13 @@ public class BlackjackGame {
      * Вывод текущего состояния игры.
      */
     private void printGameState() {
-
         System.out.println("Ваши карты: " + player.getHand() + "  " + player.getScore());
 
-        System.out.print("Карты дилера: " + dealer.getHand());
-
         if (dealer.hasHiddenCard()) {
-
-            System.out.println(", <закрытая карта>");
-
+            Card firstCard = dealer.getHand().getCards().getFirst();
+            System.out.println("Карты дилера: [" + firstCard + " (" + firstCard.getValue() + ")], <закрытая карта>");
         } else {
-
-            System.out.println("  " + dealer.getScore());
+            System.out.println("Карты дилера: " + dealer.getHand() + "  " + dealer.getScore());
         }
     }
 

@@ -2,36 +2,47 @@ package ru.nsu.batyaev;
 
 /**
  * Представляет дилера в Blackjack.
- * Дилер наследуется от класса Player и дополнительно
- * имеет одну скрытую карту.
+ * Использует композицию вместо наследования от Player (LSP).
  */
-public class Dealer extends Player {
+public class Dealer {
 
-    private Card hiddenCard;
+    private final Hand hand = new Hand();
+    private boolean hiddenCardOpened = false;
 
-    public void setHiddenCard(Card card) {
-        hiddenCard = card;
+    public void takeCard(Card card) {
+        hand.addCard(card);
     }
 
-    public Card getHiddenCard() {
-        return hiddenCard;
+    public Hand getHand() {
+        return hand;
+    }
+
+    public int getScore() {
+        return hand.getScore();
+    }
+
+    public boolean hasBlackjack() {
+        return hand.isBlackjack();
+    }
+
+    public boolean isBust() {
+        return hand.isBust();
     }
 
     public boolean hasHiddenCard() {
-        return hiddenCard != null;
+        return !hiddenCardOpened && hand.getCards().size() >= 2;
     }
 
-    public void revealHiddenCard() {
-
-        if (hiddenCard != null) {
-            takeCard(hiddenCard);
-            hiddenCard = null;
-        }
+    /**
+     * Открывает скрытую карту и сразу возвращает её наружу.
+     */
+    public Card revealHiddenCard() {
+        hiddenCardOpened = true;
+        return hand.getCards().getLast();
     }
 
-    @Override
     public void clearHand() {
-        super.clearHand();
-        hiddenCard = null;
+        hand.clear();
+        hiddenCardOpened = false;
     }
 }
