@@ -7,116 +7,61 @@ import static org.junit.jupiter.api.Assertions.*;
 class DealerTest {
 
     @Test
-    void dealerShouldHaveHiddenCard() {
+    void dealerShouldHaveHiddenCardWhenTwoCardsDealt() {
         Dealer dealer = new Dealer();
 
-        Card hiddenCard = new Card(
-                Card.Suit.HEARTS,
-                Card.Rank.KING
-        );
-
-        dealer.setHiddenCard(hiddenCard);
+        dealer.takeCard(new Card(Card.Suit.HEARTS, Card.Rank.KING));
+        dealer.takeCard(new Card(Card.Suit.CLUBS, Card.Rank.SEVEN));
 
         assertTrue(dealer.hasHiddenCard());
-        assertSame(hiddenCard, dealer.getHiddenCard());
     }
 
     @Test
-    void hiddenCardShouldNotBeIncludedInScore() {
+    void revealHiddenCardShouldReturnLastCardAndOpenIt() {
         Dealer dealer = new Dealer();
 
-        Card hiddenCard = new Card(
-                Card.Suit.HEARTS,
-                Card.Rank.KING
-        );
+        Card card1 = new Card(Card.Suit.HEARTS, Card.Rank.KING);
+        Card card2 = new Card(Card.Suit.CLUBS, Card.Rank.SEVEN);
 
-        dealer.setHiddenCard(hiddenCard);
+        dealer.takeCard(card1);
+        dealer.takeCard(card2);
 
-        dealer.takeCard(new Card(
-                Card.Suit.CLUBS,
-                Card.Rank.SEVEN
-        ));
+        Card revealedCard = dealer.revealHiddenCard();
 
-        assertEquals(7, dealer.getScore());
+        assertEquals(card2, revealedCard);
+        assertFalse(dealer.hasHiddenCard());
     }
 
     @Test
-    void revealHiddenCardShouldAddCardToHand() {
+    void dealerScoreShouldIncludeAllCardsInHand() {
         Dealer dealer = new Dealer();
 
-        Card hiddenCard = new Card(
-                Card.Suit.HEARTS,
-                Card.Rank.KING
-        );
-
-        dealer.setHiddenCard(hiddenCard);
-
-        dealer.takeCard(new Card(
-                Card.Suit.CLUBS,
-                Card.Rank.SEVEN
-        ));
-
-        dealer.revealHiddenCard();
-
-        assertEquals(2, dealer.getHand().getCards().size());
-    }
-
-    @Test
-    void revealHiddenCardShouldUpdateScore() {
-        Dealer dealer = new Dealer();
-
-        Card hiddenCard = new Card(
-                Card.Suit.HEARTS,
-                Card.Rank.KING
-        );
-
-        dealer.setHiddenCard(hiddenCard);
-
-        dealer.takeCard(new Card(
-                Card.Suit.CLUBS,
-                Card.Rank.SEVEN
-        ));
-
-        dealer.revealHiddenCard();
+        dealer.takeCard(new Card(Card.Suit.HEARTS, Card.Rank.KING));
+        dealer.takeCard(new Card(Card.Suit.CLUBS, Card.Rank.SEVEN));
 
         assertEquals(17, dealer.getScore());
     }
 
     @Test
-    void revealHiddenCardShouldRemoveHiddenCard() {
+    void clearHandShouldResetHandAndHiddenFlag() {
         Dealer dealer = new Dealer();
 
-        Card hiddenCard = new Card(
-                Card.Suit.HEARTS,
-                Card.Rank.KING
-        );
-
-        dealer.setHiddenCard(hiddenCard);
-
-        dealer.revealHiddenCard();
-
-        assertFalse(dealer.hasHiddenCard());
-        assertNull(dealer.getHiddenCard());
-    }
-
-    @Test
-    void clearHandShouldAlsoRemoveHiddenCard() {
-        Dealer dealer = new Dealer();
-
-        dealer.setHiddenCard(new Card(
-                Card.Suit.HEARTS,
-                Card.Rank.KING
-        ));
-
-        dealer.takeCard(new Card(
-                Card.Suit.CLUBS,
-                Card.Rank.SEVEN
-        ));
+        dealer.takeCard(new Card(Card.Suit.HEARTS, Card.Rank.KING));
+        dealer.takeCard(new Card(Card.Suit.CLUBS, Card.Rank.SEVEN));
 
         dealer.clearHand();
 
         assertEquals(0, dealer.getHand().getCards().size());
         assertFalse(dealer.hasHiddenCard());
-        assertNull(dealer.getHiddenCard());
+    }
+
+    @Test
+    void dealerShouldDetectBlackjack() {
+        Dealer dealer = new Dealer();
+
+        dealer.takeCard(new Card(Card.Suit.HEARTS, Card.Rank.ACE));
+        dealer.takeCard(new Card(Card.Suit.CLUBS, Card.Rank.KING));
+
+        assertTrue(dealer.hasBlackjack());
     }
 }
