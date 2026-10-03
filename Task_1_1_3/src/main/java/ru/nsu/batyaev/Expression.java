@@ -19,7 +19,6 @@ public abstract class Expression {
     public abstract double eval(Map<String, Double> env);
 
     public static Expression fromConsole(Scanner scanner) {
-//        Scanner scanner = new Scanner(System.in);
         return parse(scanner.nextLine());
     }
 
@@ -49,6 +48,7 @@ public abstract class Expression {
             throw new IllegalArgumentException("Пустое выражение");
         }
 
+        // Снятие внешних скобок, если они обрамляют всё выражение
         if (s.startsWith("(") && s.endsWith(")")) {
             int depth = 0;
             boolean matchesEntireString = true;
@@ -69,21 +69,35 @@ public abstract class Expression {
             }
         }
 
-        // Поиск бинарного оператора верхнего уровня (вне внутренних скобок)
-        int depth = 0;
         int opIndex = -1;
+        int depth = 0;
 
-        for (int i = 0; i < s.length(); i++) {
+        // 1. Поиск операторов с низшим приоритетом (+ и -) справа налево
+        for (int i = s.length() - 1; i >= 0; i--) {
             char c = s.charAt(i);
-            if (c == '(') depth++;
-            else if (c == ')') depth--;
-            else if (depth == 0 && (c == '+' || c == '-' || c == '*' || c == '/')) {
+            if (c == ')') depth++;
+            else if (c == '(') depth--;
+            else if (depth == 0 && (c == '+' || c == '-')) {
                 opIndex = i;
                 break;
             }
         }
 
-        // Разбиение по найденному оператору
+        // 2. Если + и - не найдены, ищем * и / справа налево
+        if (opIndex == -1) {
+            depth = 0;
+            for (int i = s.length() - 1; i >= 0; i--) {
+                char c = s.charAt(i);
+                if (c == ')') depth++;
+                else if (c == '(') depth--;
+                else if (depth == 0 && (c == '*' || c == '/')) {
+                    opIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Рекурсивное построение дерева
         if (opIndex != -1) {
             Expression left = parse(s.substring(0, opIndex));
             Expression right = parse(s.substring(opIndex + 1));
@@ -97,7 +111,6 @@ public abstract class Expression {
             }
         }
 
-        // Попытка распознать число, иначе — переменная
         try {
             return new Number(Double.parseDouble(s));
         } catch (NumberFormatException ex) {
