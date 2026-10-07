@@ -31,4 +31,11 @@ class DivTest {
         Expression div = new Div(new Variable("a"), new Variable("b"));
         assertEquals("(a/b)", div.toString());
     }
+
+    @Test
+    @DisplayName("Исключение при делении на ноль")
+    void testDivisionByZeroThrowsException() {
+        Expression div = new Div(new Number(10), new Number(0));
+        assertThrows(ArithmeticException.class, () -> div.eval(Map.of()));
+    }
 }
