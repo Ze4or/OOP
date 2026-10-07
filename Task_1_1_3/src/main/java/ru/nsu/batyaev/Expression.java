@@ -114,7 +114,11 @@ public abstract class Expression {
         try {
             return new Number(Double.parseDouble(s));
         } catch (NumberFormatException ex) {
-            return new Variable(s);
+            if (s.matches("^[a-zA-Z_][a-zA-Z0-9_]*$")) {
+                return new Variable(s);
+            } else {
+                throw new IllegalArgumentException("Нераспознанный токен или некорректное имя переменной: '" + s + "'");
+            }
         }
     }
 

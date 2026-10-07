@@ -29,6 +29,12 @@ public class Div extends BinaryOperation {
 
     @Override
     public double eval(Map<String, Double> env) {
-        return left.eval(env) / right.eval(env);
+        double rightValue = right.eval(env);
+
+        if (rightValue == 0.0) {
+            throw new ArithmeticException("Деление на ноль в выражении");
+        }
+
+        return left.eval(env) / rightValue;
     }
 }
