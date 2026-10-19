@@ -6,7 +6,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 
 /**
  * Интерфейс ориентированного графа с вершинами типа int.
@@ -34,10 +33,9 @@ public interface Graph {
     }
 
     /**
-     * Чтение графа из файла фиксированного формата.
+     * Чтение и считывание структуры графа из файла в текущий объект.
      */
-    static <G extends Graph> G readFromFile(Path path, Supplier<G> graphFactory) throws IOException {
-        G graph = graphFactory.get();
+    default void readFromFile(Path path) throws IOException {
         try (BufferedReader reader = Files.newBufferedReader(path)) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -47,14 +45,13 @@ public interface Graph {
                 }
                 String[] parts = line.split("\\s+");
                 if (parts.length == 1) {
-                    graph.addVertex(Integer.parseInt(parts[0]));
+                    this.addVertex(Integer.parseInt(parts[0]));
                 } else if (parts.length >= 2) {
                     int u = Integer.parseInt(parts[0]);
                     int v = Integer.parseInt(parts[1]);
-                    graph.addEdge(u, v);
+                    this.addEdge(u, v);
                 }
             }
         }
-        return graph;
     }
 }

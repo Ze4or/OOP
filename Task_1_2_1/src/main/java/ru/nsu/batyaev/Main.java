@@ -79,7 +79,9 @@ public class Main {
         Path tempFile = Files.createTempFile("graph_sample", ".txt");
         Files.writeString(tempFile, "# Пример файла\n100 200\n100 300\n200 400\n300 400\n500\n");
 
-        Graph incidenceGraph = Graph.readFromFile(tempFile, IncidenceMatrixGraph::new);
+        Graph incidenceGraph = new IncidenceMatrixGraph();
+        incidenceGraph.readFromFile(tempFile);
+
         System.out.println("Граф, прочитанный из файла в IncidenceMatrixGraph:");
         System.out.println(incidenceGraph);
         System.out.println("Соседи вершины 100: " + incidenceGraph.getNeighbors(100));

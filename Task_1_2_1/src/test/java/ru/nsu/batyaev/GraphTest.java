@@ -116,7 +116,7 @@ class GraphTest {
 
     @ParameterizedTest(name = "Топологическая сортировка: {0}")
     @MethodSource("graphProvider")
-    @DisplayName("Топологическая сортировка ациклического графа")
+    @DisplayName("Топологическая сортировка ациклического графа (DAG)")
     void testTopologicalSort(SupplierGraph sg) {
         Graph graph = sg.supplier().get();
 
@@ -188,7 +188,8 @@ class GraphTest {
                 """;
         Files.writeString(file, content);
 
-        Graph graph = Graph.readFromFile(file, AdjacencyListGraph::new);
+        Graph graph = new AdjacencyListGraph();
+        graph.readFromFile(file);
 
         assertEquals(5, graph.getVerticesCount());
         assertTrue(graph.getVertices().containsAll(Set.of(10, 20, 30, 40, 50)));
