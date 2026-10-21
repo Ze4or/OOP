@@ -150,7 +150,7 @@ class GraphTest {
     }
 
     @Nested
-    @DisplayName("Детальные тесты контракта AbstractGraph (100% покрытие equals, hashCode, toString)")
+    @DisplayName("Детальные тесты контракта AbstractGraph")
     class AbstractGraphContractTest {
 
         @Test
