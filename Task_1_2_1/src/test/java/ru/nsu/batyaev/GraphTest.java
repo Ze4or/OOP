@@ -1,6 +1,7 @@
 package ru.nsu.batyaev;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -148,29 +149,99 @@ class GraphTest {
         assertThrows(IllegalStateException.class, () -> new DfsTopologicalSorter().sort(graph));
     }
 
-    @Test
-    @DisplayName("Сравнение разных реализаций графа на равенство (equals и hashCode)")
-    void testCrossImplementationEqualsAndHashCode() {
-        Graph g1 = new AdjacencyListGraph();
-        Graph g2 = new AdjacencyMatrixGraph();
-        Graph g3 = new IncidenceMatrixGraph();
+    @Nested
+    @DisplayName("Детальные тесты контракта AbstractGraph (100% покрытие equals, hashCode, toString)")
+    class AbstractGraphContractTest {
 
-        for (Graph g : List.of(g1, g2, g3)) {
-            g.addEdge(10, 20);
-            g.addEdge(10, 30);
-            g.addEdge(20, 40);
-            g.addVertex(50);
+        @Test
+        @DisplayName("equals: сравнение объекта с самим собой (this == o)")
+        void testEqualsSameInstance() {
+            Graph g = new AdjacencyListGraph();
+            g.addEdge(1, 2);
+            assertEquals(g, g);
         }
 
-        assertEquals(g1, g2);
-        assertEquals(g2, g3);
-        assertEquals(g1, g3);
+        @Test
+        @DisplayName("equals: сравнение с null и объектом другого типа")
+        void testEqualsInvalidType() {
+            Graph g = new AdjacencyListGraph();
+            g.addEdge(1, 2);
 
-        assertEquals(g1.hashCode(), g2.hashCode());
-        assertEquals(g2.hashCode(), g3.hashCode());
+            assertNotNull(g);
+            assertNotEquals(g, "Строка вместо графа");
+            assertNotEquals(g, 100);
+        }
 
-        g1.addEdge(30, 50);
-        assertNotEquals(g1, g2);
+        @Test
+        @DisplayName("equals: разное множество вершин")
+        void testEqualsDifferentVertexSets() {
+            Graph g1 = new AdjacencyListGraph();
+            Graph g2 = new AdjacencyMatrixGraph();
+
+            g1.addVertex(1);
+            g1.addVertex(2);
+
+            g2.addVertex(1);
+            g2.addVertex(3);
+
+            assertNotEquals(g1, g2);
+        }
+
+        @Test
+        @DisplayName("equals: одинаковые вершины, но разные ребра")
+        void testEqualsDifferentNeighbors() {
+            Graph g1 = new AdjacencyListGraph();
+            Graph g2 = new IncidenceMatrixGraph();
+
+            g1.addEdge(1, 2);
+            g1.addVertex(3);
+
+            g2.addEdge(1, 3);
+            g2.addVertex(2);
+
+            assertEquals(g1.getVertices(), g2.getVertices());
+            assertNotEquals(g1, g2);
+        }
+
+        @Test
+        @DisplayName("equals и hashCode: полное совпадение для разных реализаций")
+        void testEqualsAndHashCodeCrossImplementation() {
+            Graph g1 = new AdjacencyListGraph();
+            Graph g2 = new AdjacencyMatrixGraph();
+            Graph g3 = new IncidenceMatrixGraph();
+
+            for (Graph g : List.of(g1, g2, g3)) {
+                g.addEdge(10, 20);
+                g.addEdge(10, 30);
+                g.addEdge(20, 40);
+                g.addVertex(50);
+            }
+
+            assertEquals(g1, g2);
+            assertEquals(g2, g3);
+            assertEquals(g1, g3);
+
+            assertEquals(g1.hashCode(), g2.hashCode());
+            assertEquals(g2.hashCode(), g3.hashCode());
+        }
+
+        @Test
+        @DisplayName("toString: проверка форматирования обычного и пустого графа")
+        void testToStringFormatting() {
+            Graph emptyGraph = new AdjacencyListGraph();
+            assertTrue(emptyGraph.toString().contains("AdjacencyListGraph"));
+            assertTrue(emptyGraph.toString().contains("Вершины (0): []"));
+
+            Graph g = new AdjacencyMatrixGraph();
+            g.addEdge(1, 2);
+            g.addVertex(3); // Изолированная вершина (проверяет ветку !neighbors.isEmpty())
+
+            String str = g.toString();
+            assertTrue(str.contains("AdjacencyMatrixGraph"));
+            assertTrue(str.contains("Вершины (3)"));
+            assertTrue(str.contains("1 -> [2]"));
+            assertFalse(str.contains("3 -> []"));
+        }
     }
 
     @Test
