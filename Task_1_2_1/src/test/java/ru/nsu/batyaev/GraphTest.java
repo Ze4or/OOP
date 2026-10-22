@@ -283,4 +283,24 @@ class GraphTest {
             }
         }
     }
+
+    @ParameterizedTest(name = "Тест петель")
+    @MethodSource("graphProvider")
+    @DisplayName("Операции с петлями")
+    void testSelfLoops(SupplierGraph sg) {
+        Graph graph = sg.supplier().get();
+
+        assertTrue(graph.addEdge(1, 1), "Ребро-петля должно быть успешно добавлено");
+        assertFalse(graph.addEdge(1, 1), "Повторное добавление петли должно вернуть false");
+
+        assertTrue(graph.hasVertex(1));
+        assertTrue(graph.hasEdge(1, 1), "Граф должен содержать ребро-петлю 1->1");
+
+        assertEquals(1, graph.getEdgesCount(), "Количество ребер должно быть 1");
+        assertEquals(List.of(1), graph.getNeighbors(1), "Вершина 1 должна быть своим же соседом");
+
+        assertTrue(graph.removeEdge(1, 1), "Ребро-петля должно быть успешно удалено");
+        assertFalse(graph.hasEdge(1, 1), "Ребра 1->1 больше не должно быть");
+        assertEquals(0, graph.getEdgesCount());
+    }
 }

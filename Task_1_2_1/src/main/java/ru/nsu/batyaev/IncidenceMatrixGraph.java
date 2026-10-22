@@ -4,10 +4,13 @@ import java.util.*;
 
 /**
  * Представление графа через матрицу инцидентности.
- * Строки соответствуют вершинам, столбцы - ребрам.
- * Значения: -1 (исходящее ребро), +1 (входящее ребро), 2 (петля).
  */
 public class IncidenceMatrixGraph extends AbstractGraph {
+    private static final int NO_EDGE = 0;
+    private static final int INCOMING_EDGE = 1;
+    private static final int OUTGOING_EDGE = -1;
+    private static final int LOOP_EDGE = 2;
+
     private static class Edge {
         final int u, v;
         Edge(int u, int v) { this.u = u; this.v = v; }
@@ -34,7 +37,7 @@ public class IncidenceMatrixGraph extends AbstractGraph {
         vertexToIndex.put(v, idx);
         indexToVertex.add(v);
 
-        List<Integer> newRow = new ArrayList<>(Collections.nCopies(edges.size(), 0));
+        List<Integer> newRow = new ArrayList<>(Collections.nCopies(edges.size(), NO_EDGE));
         matrix.add(newRow);
         return true;
     }
@@ -73,10 +76,10 @@ public class IncidenceMatrixGraph extends AbstractGraph {
         int vIdx = vertexToIndex.get(v);
 
         for (int i = 0; i < indexToVertex.size(); i++) {
-            int val = 0;
-            if (u == v && i == uIdx) val = 2;
-            else if (i == uIdx) val = -1;
-            else if (i == vIdx) val = 1;
+            int val = NO_EDGE;
+            if (u == v && i == uIdx) val = LOOP_EDGE;
+            else if (i == uIdx) val = OUTGOING_EDGE;
+            else if (i == vIdx) val = INCOMING_EDGE;
             matrix.get(i).add(val);
         }
         return true;
@@ -122,7 +125,7 @@ public class IncidenceMatrixGraph extends AbstractGraph {
 
         for (int eIdx = 0; eIdx < row.size(); eIdx++) {
             int val = row.get(eIdx);
-            if (val == -1 || val == 2) {
+            if (val == OUTGOING_EDGE || val == LOOP_EDGE) {
                 neighbors.add(edges.get(eIdx).v);
             }
         }
