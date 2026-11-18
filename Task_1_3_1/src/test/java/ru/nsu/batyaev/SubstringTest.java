@@ -19,75 +19,81 @@ class SubstringFinderTest {
     Path tempDir;
 
     @Test
-    void testExampleFromTask() throws IOException {
+    void testTaskExample() throws IOException {
         Path file = tempDir.resolve("input.txt");
         Files.writeString(file, "абракадабра", StandardCharsets.UTF_8);
 
-        List<Long> result = SubstringFinder.find(file.toString(), "бра");
-        assertEquals(List.of(1L, 8L), result);
+        assertEquals(List.of(1L, 8L), SubstringFinder.find(file.toString(), "бра"));
     }
 
     @Test
     void testOverlappingOccurrences() throws IOException {
         Path file = tempDir.resolve("overlap.txt");
-        Files.writeString(file, "абабаба", StandardCharsets.UTF_8);
+        Files.writeString(file, "банана", StandardCharsets.UTF_8);
 
-        List<Long> result = SubstringFinder.find(file, "аба");
-        assertEquals(List.of(0L, 2L, 4L), result);
+        assertEquals(List.of(1L, 3L), SubstringFinder.find(file.toString(), "ана"));
     }
 
     @Test
-    void testMultilingualAndSurrogatePairs() throws IOException {
+    void testMultiAlphabetUtf8AndEmojis() throws IOException {
         Path file = tempDir.resolve("unicode.txt");
-
-        String content = "Привет🚀 мир𠜎 漢字🚀 мир𠜎";
+        String content = "Hello 世界! Привет мир 🚀 привет 世界!";
         Files.writeString(file, content, StandardCharsets.UTF_8);
 
-        List<Long> result = SubstringFinder.find(file, "🚀 мир𠜎");
-
-        assertEquals(List.of(6L, 15L), result);
+        assertEquals(List.of(6L, 30L), SubstringFinder.find(file.toString(), "世界"));
+        assertEquals(List.of(21L), SubstringFinder.find(file.toString(), "🚀"));
     }
 
     @Test
-    void testEmptyTargetThrowsException() throws IOException {
-        Path file = tempDir.resolve("empty_target.txt");
-        Files.writeString(file, "текст", StandardCharsets.UTF_8);
+    void testSurrogatePairOnBufferBoundary() throws IOException {
+        Path file = tempDir.resolve("boundary.txt");
+        String padding = "x".repeat(65535);
+        String target = "🚀граница";
+        Files.writeString(file, padding + target + "end", StandardCharsets.UTF_8);
 
-        assertThrows(IllegalArgumentException.class, () -> SubstringFinder.find(file, ""));
+        assertEquals(List.of(65535L), SubstringFinder.find(file.toString(), target));
     }
 
     @Test
-    void testLargeGeneratedFileExceedingSmallHeap() throws IOException {
-        Path largeFile = tempDir.resolve("large_generated.txt");
-
-        String fillerBlock = "Строка_заполнитель_без_искомого_слова_1234567890_αβγδεζηθικλμνξοπρστυφχψω\n";
-        long fillerCodePoints = fillerBlock.codePoints().count();
-        String needle = "КЛЮЧЕВОЕ_СЛОВО_UTF8";
-
-        int blocksBeforeFirst = 500;
-        int blocksBeforeSecond = 2_000_000;
-        int blocksBeforeThird = 2_000_000;
-
-        long expectedPos1 = blocksBeforeFirst * fillerCodePoints;
-        long expectedPos2 = expectedPos1 + needle.codePoints().count() + blocksBeforeSecond * fillerCodePoints;
-        long expectedPos3 = expectedPos2 + needle.codePoints().count() + blocksBeforeThird * fillerCodePoints;
+    void testLargeFileGeneration() throws IOException {
+        Path largeFile = tempDir.resolve("large_test.txt");
+        String fillerChunk = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя🚀0123456789\n";
+        long chunkCodePoints = fillerChunk.codePoints().count();
+        String target = "КЛЮЧЕВОЕ_СЛОВО_世界_🔥";
+        long targetFirstIndex;
+        long targetSecondIndex;
 
         try (BufferedWriter writer = Files.newBufferedWriter(largeFile, StandardCharsets.UTF_8)) {
-            writeRepeated(writer, fillerBlock, blocksBeforeFirst);
-            writer.write(needle);
-            writeRepeated(writer, fillerBlock, blocksBeforeSecond);
-            writer.write(needle);
-            writeRepeated(writer, fillerBlock, blocksBeforeThird);
-            writer.write(needle);
+            long writtenCodePoints = 0;
+
+            for (int i = 0; i < 1_200_000; i++) {
+                writer.write(fillerChunk);
+                writtenCodePoints += chunkCodePoints;
+            }
+
+            targetFirstIndex = writtenCodePoints;
+            writer.write(target);
+            writtenCodePoints += target.codePoints().count();
+
+            for (int i = 0; i < 1_200_000; i++) {
+                writer.write(fillerChunk);
+                writtenCodePoints += chunkCodePoints;
+            }
+
+            targetSecondIndex = writtenCodePoints;
+            writer.write(target);
         }
 
-        List<Long> result = SubstringFinder.find(largeFile, needle);
-        assertEquals(List.of(expectedPos1, expectedPos2, expectedPos3), result);
+        assertEquals(
+                List.of(targetFirstIndex, targetSecondIndex),
+                SubstringFinder.find(largeFile.toString(), target)
+        );
     }
 
-    private void writeRepeated(BufferedWriter writer, String block, int count) throws IOException {
-        for (int i = 0; i < count; i++) {
-            writer.write(block);
-        }
+    @Test
+    void testInvalidArguments() {
+        assertThrows(IllegalArgumentException.class, () -> SubstringFinder.find("any.txt", ""));
+        assertThrows(NullPointerException.class, () -> SubstringFinder.find(null, "abc"));
+        assertThrows(NullPointerException.class, () -> SubstringFinder.find("any.txt", null));
     }
 }

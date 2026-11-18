@@ -1,131 +1,97 @@
 package ru.nsu.batyaev;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
- * Класс, предоставляющий функционал для поиска всех вхождений заданной подстроки
- * в текстовом файле.
- * Реализация использует алгоритм Кнута-Морриса-Пратта (КМП) для эффективного поиска
- * и потоковое чтение файла, что позволяет обрабатывать
- * файлы любого размера без полной загрузки их в оперативную память.
- * Поддерживается поиск символов любых алфавитов, включая многобайтовые символы UTF-8
- * (например, эмодзи или иероглифы), путем корректной обработки суррогатных пар.
+ * Класс для потокового поиска всех вхождений подстроки в текстовых файлах
+ * в кодировке UTF-8.
+ * Реализация использует алгоритм Кнута-Морриса-Пратта (КМП).
  */
 public class SubstringFinder {
 
-    private static final int BUFFER_SIZE = 65_536;
+    private static final int BUFFER_SIZE = 65536;
 
-    public static List<Long> find(String filePath, String target) throws IOException {
-        return find(Path.of(filePath), target);
-    }
-
-    public static List<Long> find(Path filePath, String target) throws IOException {
-        if (target == null || target.isEmpty()) {
-            throw new IllegalArgumentException("Искомая подстрока не должна быть пустой или null");
+    public static List<Long> find(String fileName, String target) throws IOException {
+        Objects.requireNonNull(fileName, "Имя файла не должно быть null");
+        Objects.requireNonNull(target, "Искомая подстрока не должна быть null");
+        if (target.isEmpty()) {
+            throw new IllegalArgumentException("Искомая подстрока не должна быть пустой");
         }
 
         int[] pattern = target.codePoints().toArray();
-        int[] lps = computeLps(pattern);
+        int[] lps = computePrefixFunction(pattern);
+        int targetLen = pattern.length;
         List<Long> occurrences = new ArrayList<>();
 
         try (Reader reader = new BufferedReader(
-                new InputStreamReader(Files.newInputStream(filePath), StandardCharsets.UTF_8),
+                new InputStreamReader(new FileInputStream(fileName), StandardCharsets.UTF_8),
                 BUFFER_SIZE)) {
 
-            char[] buffer = new char[BUFFER_SIZE];
-            int charsRead;
-            int j = 0; // текущая позиция совпадения в pattern
-            long charIndex = 0; // индекс символа (Unicode code point) в файле
-            int pendingHighSurrogate = -1;
+            int j = 0;
+            long currentIndex = 0;
+            int pendingChar = -1;
 
-            while ((charsRead = reader.read(buffer)) != -1) {
-                for (int i = 0; i < charsRead; i++) {
-                    char ch = buffer[i];
-                    int codePoint;
+            while (true) {
+                int ch = (pendingChar != -1) ? pendingChar : reader.read();
+                pendingChar = -1;
 
-                    if (pendingHighSurrogate != -1) {
-                        if (Character.isLowSurrogate(ch)) {
-                            codePoint = Character.toCodePoint((char) pendingHighSurrogate, ch);
-                            pendingHighSurrogate = -1;
-                        } else {
-                            // Если встретился непарный high surrogate, обрабатываем его отдельно
-                            j = advanceKmp(pendingHighSurrogate, pattern, lps, j, charIndex++, occurrences);
-                            pendingHighSurrogate = -1;
-
-                            if (Character.isHighSurrogate(ch)) {
-                                pendingHighSurrogate = ch;
-                                continue;
-                            }
-                            codePoint = ch;
-                        }
-                    } else if (Character.isHighSurrogate(ch)) {
-                        pendingHighSurrogate = ch;
-                        continue;
-                    } else {
-                        codePoint = ch;
-                    }
-
-                    j = advanceKmp(codePoint, pattern, lps, j, charIndex++, occurrences);
+                if (ch == -1) {
+                    break;
                 }
-            }
 
-            if (pendingHighSurrogate != -1) {
-                advanceKmp(pendingHighSurrogate, pattern, lps, j, charIndex, occurrences);
+                char c1 = (char) ch;
+                int codePoint;
+
+                if (Character.isHighSurrogate(c1)) {
+                    int next = reader.read();
+                    if (next != -1 && Character.isLowSurrogate((char) next)) {
+                        codePoint = Character.toCodePoint(c1, (char) next);
+                    } else {
+                        codePoint = c1;
+                        pendingChar = next;
+                    }
+                } else {
+                    codePoint = c1;
+                }
+
+                while (j > 0 && codePoint != pattern[j]) {
+                    j = lps[j - 1];
+                }
+                if (codePoint == pattern[j]) {
+                    j++;
+                }
+                if (j == targetLen) {
+                    occurrences.add(currentIndex - targetLen + 1);
+                    j = lps[j - 1];
+                }
+                currentIndex++;
             }
         }
 
         return occurrences;
     }
 
-    private static int advanceKmp(
-            int codePoint,
-            int[] pattern,
-            int[] lps,
-            int j,
-            long charIndex,
-            List<Long> occurrences) {
+    private static int[] computePrefixFunction(int[] pattern) {
+        int m = pattern.length;
+        int[] lps = new int[m];
+        int j = 0;
 
-        while (j > 0 && codePoint != pattern[j]) {
-            j = lps[j - 1];
-        }
-        if (codePoint == pattern[j]) {
-            j++;
-        }
-        if (j == pattern.length) {
-            occurrences.add(charIndex - pattern.length + 1);
-            j = lps[j - 1];
-        }
-        return j;
-    }
-
-    /**
-     * Вычисляет массив длин наибольших собственных префиксов,
-     * совпадающих с суффиксами (префикс-функция для КМП).
-     */
-    private static int[] computeLps(int[] pattern) {
-        int[] lps = new int[pattern.length];
-        int len = 0;
-        int i = 1;
-
-        while (i < pattern.length) {
-            if (pattern[i] == pattern[len]) {
-                len++;
-                lps[i] = len;
-                i++;
-            } else if (len != 0) {
-                len = lps[len - 1];
-            } else {
-                lps[i] = 0;
-                i++;
+        for (int i = 1; i < m; i++) {
+            while (j > 0 && pattern[i] != pattern[j]) {
+                j = lps[j - 1];
             }
+            if (pattern[i] == pattern[j]) {
+                j++;
+            }
+            lps[i] = j;
         }
         return lps;
     }
