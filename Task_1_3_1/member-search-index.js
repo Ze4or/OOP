@@ -1,0 +1,1 @@
+memberSearchIndex = [{"p":"ru.nsu.batyaev","c":"SubstringFinder","l":"find(String, String)","u":"find(java.lang.String,java.lang.String)","k":"6"},{"p":"ru.nsu.batyaev","c":"SubstringFinder","l":"SubstringFinder()","u":"%3Cinit%3E()","k":"3"}];updateSearchResults();
